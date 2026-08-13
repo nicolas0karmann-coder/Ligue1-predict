@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ligue 1 — Prédictions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="floodlight"></div>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <p class="eyebrow">Pronostics statistiques — modèle Dixon-Coles</p>
+    <h1>LIGUE 1<span class="accent-dot">.</span></h1>
+    <div class="matchday-nav">
+      <button id="prevBtn" class="nav-btn" aria-label="Journée précédente">‹</button>
+      <div class="matchday-label">
+        <span class="matchday-eyebrow">Journée</span>
+        <span id="matchdayNumber">—</span>
+      </div>
+      <button id="nextBtn" class="nav-btn" aria-label="Journée suivante">›</button>
+    </div>
+  </div>
+</header>
+
+<main id="app">
+  <div id="statusMsg" class="status-msg">Chargement des prédictions…</div>
+  <div id="matches" class="matches"></div>
+</main>
+
+<footer class="site-footer">
+  <p>Modèle Dixon-Coles (Poisson bivarié) entraîné sur l'historique Ligue 1 depuis 2009 · Calendrier : fixturedownload.com</p>
+  <p class="disclaimer">À titre informatif — le football garde sa part d'imprévisible.</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
