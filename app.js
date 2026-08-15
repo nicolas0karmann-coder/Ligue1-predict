@@ -1,7 +1,7 @@
 // ⚠️ À adapter après le déploiement du Space Hugging Face :
 // remplace cette URL par celle de ton Space
 // (format: https://<ton-username>-<nom-du-space>.hf.space)
-const API_BASE = "https://karmouille69/Ligue1_prediction.hf.space";
+const API_BASE = "https://ligue1-predictor-api.onrender.com";
 
 const statusMsg = document.getElementById("statusMsg");
 const matchesEl = document.getElementById("matches");
