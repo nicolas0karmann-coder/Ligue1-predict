@@ -55,7 +55,36 @@ body {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-faint);
-  margin: 0 0 14px;
+  margin: 0 0 20px;
+}
+
+.league-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.league-tab {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 7px 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+.league-tab:hover { border-color: var(--home); color: var(--text); }
+.league-tab.active {
+  background: var(--home);
+  border-color: var(--home);
+  color: #0B1F17;
+  font-weight: 700;
 }
 
 h1 {

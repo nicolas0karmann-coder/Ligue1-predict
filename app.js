@@ -1,15 +1,18 @@
 // ⚠️ À adapter après le déploiement du backend sur Render :
 // remplace cette URL par celle de ton service Render
 // (format: https://ton-service.onrender.com, SANS "/" à la fin)
-const API_BASE = "https://ligue1-predictor-api.onrender.com";
+const API_BASE = "https://REMPLACE-MOI.onrender.com";
 
 const statusMsg = document.getElementById("statusMsg");
 const matchesEl = document.getElementById("matches");
 const matchdayNumberEl = document.getElementById("matchdayNumber");
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
+const leagueTabsEl = document.getElementById("leagueTabs");
+const leagueTitleEl = document.getElementById("leagueTitle");
 
 let currentRound = null;
+let currentLeague = localStorage.getItem("lastLeague") || "ligue-1";
 
 function pct(x) {
   return Math.round(x * 100) + "%";
@@ -90,11 +93,59 @@ async function fetchJourney(path) {
   }
 }
 
+function loadCurrentLeagueMatchday() {
+  currentRound = null;
+  fetchJourney(`/api/${currentLeague}/journee/courante`);
+}
+
+function selectLeague(code, label) {
+  currentLeague = code;
+  localStorage.setItem("lastLeague", code);
+  leagueTitleEl.innerHTML = `${label.toUpperCase()}<span class="accent-dot">.</span>`;
+  document.querySelectorAll(".league-tab").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.code === code);
+  });
+  loadCurrentLeagueMatchday();
+}
+
+async function initLeagueTabs() {
+  try {
+    const res = await fetch(`${API_BASE}/api/championnats`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const leagues = data.championnats || [];
+
+    leagueTabsEl.innerHTML = leagues.map(l => `
+      <button class="league-tab" data-code="${l.code}" data-label="${l.label}">
+        ${l.flag} ${l.label}
+      </button>
+    `).join("");
+
+    leagueTabsEl.querySelectorAll(".league-tab").forEach(btn => {
+      btn.addEventListener("click", () => selectLeague(btn.dataset.code, btn.dataset.label));
+    });
+
+    // sélectionne le championnat mémorisé (ou Ligue 1 par défaut) s'il existe bien dans la liste
+    const found = leagues.find(l => l.code === currentLeague);
+    const initial = found || leagues[0];
+    if (initial) {
+      selectLeague(initial.code, initial.label);
+    } else {
+      statusMsg.textContent = "Aucun championnat disponible.";
+    }
+  } catch (err) {
+    // si la liste des championnats échoue, on retombe sur Ligue 1 par défaut
+    // pour que le site reste utilisable même si cet appel spécifique rate
+    console.error(err);
+    selectLeague("ligue-1", "Ligue 1");
+  }
+}
+
 prevBtn.addEventListener("click", () => {
-  if (currentRound && currentRound > 1) fetchJourney(`/api/journee/${currentRound - 1}`);
+  if (currentRound && currentRound > 1) fetchJourney(`/api/${currentLeague}/journee/${currentRound - 1}`);
 });
 nextBtn.addEventListener("click", () => {
-  if (currentRound) fetchJourney(`/api/journee/${currentRound + 1}`);
+  if (currentRound) fetchJourney(`/api/${currentLeague}/journee/${currentRound + 1}`);
 });
 
-fetchJourney("/api/journee/courante");
+initLeagueTabs();
