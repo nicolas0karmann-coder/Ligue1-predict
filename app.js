@@ -1,6 +1,6 @@
 // ⚠️ À adapter après le déploiement du backend sur Render :
 // remplace cette URL par celle de ton service Render
-// (format: https://ton-service.onrender.com)
+// (format: https://ton-service.onrender.com, SANS "/" à la fin)
 const API_BASE = "https://ligue1-predictor-api.onrender.com";
 
 const statusMsg = document.getElementById("statusMsg");
@@ -84,7 +84,8 @@ async function fetchJourney(path) {
     statusMsg.classList.add("error");
     statusMsg.textContent =
       "Impossible de contacter le serveur de prédictions. " +
-      "Vérifie que le Space Hugging Face est bien démarré, ou réessaie dans quelques instants.";
+      "Vérifie que le service Render est bien démarré (il peut mettre 30-60s à se réveiller " +
+      "s'il était en veille), ou réessaie dans quelques instants.";
     console.error(err);
   }
 }
