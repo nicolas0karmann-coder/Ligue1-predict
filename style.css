@@ -204,6 +204,21 @@ main {
 .team-name.home { text-align: right; }
 .team-name.away { text-align: left; }
 
+.fatigue-badge {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--away);
+  border: 1px solid var(--away);
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: 6px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
 .expected-score {
   font-family: 'JetBrains Mono', monospace;
   font-size: 20px;
@@ -266,6 +281,33 @@ main {
   padding: 4px 8px;
 }
 .score-chip b { color: var(--text); }
+
+.injuries-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
+}
+.injuries-home { text-align: right; }
+.injuries-away { text-align: left; grid-column: 2; }
+.injuries-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-faint);
+}
+.injuries ul {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.injury-reason { color: var(--text-faint); font-size: 11px; }
 
 .played-badge {
   color: var(--away);
