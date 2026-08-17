@@ -1,7 +1,7 @@
 // ⚠️ À adapter après le déploiement du backend sur Render :
 // remplace cette URL par celle de ton service Render
 // (format: https://ton-service.onrender.com, SANS "/" à la fin)
-const API_BASE = "https://ligue1-predictor-api.onrender.com";
+const API_BASE = "https://REMPLACE-MOI.onrender.com";
 
 const statusMsg = document.getElementById("statusMsg");
 const matchesEl = document.getElementById("matches");
@@ -37,14 +37,6 @@ function matchCardHTML(m, index) {
     .map(s => `<span class="score-chip"><b>${s.home_goals}-${s.away_goals}</b> ${pct(s.probability)}</span>`)
     .join("");
 
-  const fatigueBadge = (label) => `<span class="fatigue-badge" title="A joué en coupe d'Europe récemment">🔻 Europe</span>`;
-
-  const injuriesHTML = (list, side) => {
-    if (!list || list.length === 0) return "";
-    const items = list.map(p => `<li>${p.player} <span class="injury-reason">(${p.reason})</span></li>`).join("");
-    return `<div class="injuries injuries-${side}"><span class="injuries-label">Absences</span><ul>${items}</ul></div>`;
-  };
-
   return `
     <article class="match-card" style="animation-delay:${index * 0.06}s">
       <div class="match-meta">
@@ -52,9 +44,9 @@ function matchCardHTML(m, index) {
         ${m.played ? '<span class="played-badge">Match joué</span>' : ""}
       </div>
       <div class="teams-row">
-        <div class="team-name home">${m.home_team}${m.home_fatigue ? fatigueBadge() : ""}</div>
+        <div class="team-name home">${m.home_team}</div>
         <div class="expected-score">${m.expected_goals_home.toFixed(1)}<span class="sep">–</span>${m.expected_goals_away.toFixed(1)}</div>
-        <div class="team-name away">${m.away_team}${m.away_fatigue ? fatigueBadge() : ""}</div>
+        <div class="team-name away">${m.away_team}</div>
       </div>
       <div class="prob-bar">
         <div class="prob-seg home ${m.prob_home_win < 0.12 ? 'tiny' : ''}" style="flex-grow:${m.prob_home_win}">${home}</div>
@@ -67,11 +59,6 @@ function matchCardHTML(m, index) {
         <span>2 · ${m.away_team}</span>
       </div>
       <div class="top-scores">${scoresHTML}</div>
-      ${(m.home_injuries?.length || m.away_injuries?.length) ? `
-      <div class="injuries-row">
-        ${injuriesHTML(m.home_injuries, "home")}
-        ${injuriesHTML(m.away_injuries, "away")}
-      </div>` : ""}
     </article>
   `;
 }
