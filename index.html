@@ -11,6 +11,7 @@
 </head>
 <body>
 
+<div id="loadingBar" class="loading-bar"></div>
 <div class="floodlight"></div>
 
 <header class="masthead">
@@ -19,12 +20,10 @@
     <div id="leagueTabs" class="league-tabs" role="tablist" aria-label="Choix du championnat"></div>
     <h1 id="leagueTitle">LIGUE 1<span class="accent-dot">.</span></h1>
     <div class="matchday-nav">
-      <button id="prevBtn" class="nav-btn" aria-label="Journée précédente">‹</button>
-      <div class="matchday-label">
-        <span class="matchday-eyebrow">Journée</span>
-        <span id="matchdayNumber">—</span>
+      <label for="matchdaySelect" class="matchday-eyebrow">Journée</label>
+      <div class="select-wrap">
+        <select id="matchdaySelect" aria-label="Choisir la journée"></select>
       </div>
-      <button id="nextBtn" class="nav-btn" aria-label="Journée suivante">›</button>
     </div>
   </div>
 </header>

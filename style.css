@@ -27,6 +27,38 @@ body {
 }
 
 /* --- floodlight glow behind the masthead, signature element --- */
+/* --- barre de chargement en haut de l'écran, façon "progress bar" --- */
+.loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 100;
+  background: transparent;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.loading-bar.active { opacity: 1; }
+.loading-bar.active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, var(--home), transparent);
+  animation: loading-slide 1.1s ease-in-out infinite;
+}
+@keyframes loading-slide {
+  0%   { left: -40%; }
+  100% { left: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-bar.active::before { animation: none; left: 0; width: 100%; opacity: 0.5; }
+}
+
 .floodlight {
   position: absolute;
   top: -280px;
@@ -104,44 +136,59 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  gap: 14px;
   margin-top: 28px;
 }
 
-.nav-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--text);
-  font-size: 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: border-color 0.15s, background 0.15s;
-}
-.nav-btn:hover { border-color: var(--home); background: var(--surface-hover); }
-.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-.matchday-label {
-  font-family: 'Oswald', sans-serif;
-  font-size: 22px;
-  letter-spacing: 0.04em;
-  min-width: 160px;
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  justify-content: center;
-}
 .matchday-eyebrow {
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   color: var(--text-faint);
   text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
-#matchdayNumber { color: var(--home); font-weight: 600; }
+
+.select-wrap {
+  position: relative;
+  display: inline-block;
+}
+.select-wrap::after {
+  content: "▾";
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--home);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+#matchdaySelect {
+  font-family: 'Oswald', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 36px 8px 18px;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+#matchdaySelect:hover,
+#matchdaySelect:focus {
+  border-color: var(--home);
+  background: var(--surface-hover);
+  outline: none;
+}
+#matchdaySelect option {
+  background: var(--surface);
+  color: var(--text);
+  font-family: 'Oswald', sans-serif;
+}
 
 main {
   position: relative;

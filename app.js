@@ -1,17 +1,15 @@
 // ⚠️ À adapter après le déploiement du backend sur Render :
 // remplace cette URL par celle de ton service Render
 // (format: https://ton-service.onrender.com, SANS "/" à la fin)
-const API_BASE = "https://ligue1-predictor-api.onrender.com";
+const API_BASE = "https://REMPLACE-MOI.onrender.com";
 
 const statusMsg = document.getElementById("statusMsg");
 const matchesEl = document.getElementById("matches");
-const matchdayNumberEl = document.getElementById("matchdayNumber");
-const prevBtn = document.getElementById("prevBtn");
-const nextBtn = document.getElementById("nextBtn");
+const matchdaySelectEl = document.getElementById("matchdaySelect");
+const loadingBarEl = document.getElementById("loadingBar");
 const leagueTabsEl = document.getElementById("leagueTabs");
 const leagueTitleEl = document.getElementById("leagueTitle");
 
-let currentRound = null;
 let currentLeague = localStorage.getItem("lastLeague") || "ligue-1";
 
 function pct(x) {
@@ -65,38 +63,49 @@ function matchCardHTML(m, index) {
   `;
 }
 
+function populateMatchdaySelect(totalRounds, currentRound) {
+  const total = Math.max(totalRounds || currentRound, currentRound);
+  let opts = "";
+  for (let i = 1; i <= total; i++) {
+    opts += `<option value="${i}"${i === currentRound ? " selected" : ""}>Journée ${i}</option>`;
+  }
+  matchdaySelectEl.innerHTML = opts;
+}
+
 function render(data) {
-  currentRound = data.round_number;
-  matchdayNumberEl.textContent = data.round_number;
+  populateMatchdaySelect(data.total_rounds, data.round_number);
   matchesEl.innerHTML = data.matches.map((m, i) => matchCardHTML(m, i)).join("");
   statusMsg.classList.add("hidden");
 }
 
 async function fetchJourney(path) {
+  loadingBarEl.classList.add("active");
   statusMsg.classList.remove("hidden", "error");
   statusMsg.textContent = "Chargement des prédictions…";
-  matchesEl.innerHTML = "";
   try {
     const res = await fetch(`${API_BASE}${path}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (!data.matches || data.matches.length === 0) {
+      matchesEl.innerHTML = "";
       statusMsg.textContent = "Aucun match trouvé pour cette journée.";
       return;
     }
     render(data);
   } catch (err) {
+    matchesEl.innerHTML = "";
     statusMsg.classList.add("error");
     statusMsg.textContent =
       "Impossible de contacter le serveur de prédictions. " +
       "Vérifie que le service Render est bien démarré (il peut mettre 30-60s à se réveiller " +
       "s'il était en veille), ou réessaie dans quelques instants.";
     console.error(err);
+  } finally {
+    loadingBarEl.classList.remove("active");
   }
 }
 
 function loadCurrentLeagueMatchday() {
-  currentRound = null;
   fetchJourney(`/api/${currentLeague}/journee/courante`);
 }
 
@@ -107,6 +116,7 @@ function selectLeague(code, label) {
   document.querySelectorAll(".league-tab").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.code === code);
   });
+  // journée en cours/à venir par défaut à chaque changement de championnat
   loadCurrentLeagueMatchday();
 }
 
@@ -143,11 +153,9 @@ async function initLeagueTabs() {
   }
 }
 
-prevBtn.addEventListener("click", () => {
-  if (currentRound && currentRound > 1) fetchJourney(`/api/${currentLeague}/journee/${currentRound - 1}`);
-});
-nextBtn.addEventListener("click", () => {
-  if (currentRound) fetchJourney(`/api/${currentLeague}/journee/${currentRound + 1}`);
+matchdaySelectEl.addEventListener("change", () => {
+  const numero = parseInt(matchdaySelectEl.value, 10);
+  if (numero) fetchJourney(`/api/${currentLeague}/journee/${numero}`);
 });
 
 initLeagueTabs();
