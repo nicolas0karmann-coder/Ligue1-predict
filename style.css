@@ -119,6 +119,30 @@ body {
   font-weight: 700;
 }
 
+.view-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 24px;
+}
+
+.view-tab {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 6px 4px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.view-tab + .view-tab { margin-left: 18px; }
+.view-tab:hover { color: var(--text-muted); }
+.view-tab.active { color: var(--text); border-bottom-color: var(--home); }
+
 h1 {
   font-family: 'Oswald', sans-serif;
   font-weight: 700;
@@ -139,7 +163,7 @@ h1 {
   gap: 14px;
   margin-top: 28px;
 }
-
+.matchday-nav.hidden { display: none; }
 .matchday-eyebrow {
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
@@ -209,6 +233,7 @@ main {
 .status-msg.hidden { display: none; }
 
 .matches { display: flex; flex-direction: column; gap: 14px; }
+.matches.hidden { display: none; }
 
 .match-card {
   background: var(--surface);
@@ -333,6 +358,86 @@ main {
   color: var(--away);
 }
 
+/* --- vue "Classement" : classement de force Elo, distinct des prédictions --- */
+.ranking { display: flex; flex-direction: column; gap: 14px; }
+.ranking.hidden { display: none; }
+
+.ranking-note {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-faint);
+  text-align: center;
+  line-height: 1.6;
+  margin: 0 0 4px;
+}
+
+.ranking-table {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.rank-row {
+  display: grid;
+  grid-template-columns: 32px 1fr 96px 56px;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+  opacity: 0;
+  transform: translateY(6px);
+  animation: rise 0.4s ease forwards;
+}
+.rank-row:last-child { border-bottom: none; }
+
+.rank-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-faint);
+  text-align: right;
+}
+.rank-row.top3 .rank-number { color: var(--home); }
+
+.rank-team {
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rank-bar-wrap {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.rank-bar {
+  height: 100%;
+  background: var(--home);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.rank-elo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: right;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .rank-row { grid-template-columns: 24px 1fr 64px 48px; gap: 10px; padding: 10px 14px; }
+  .rank-team { font-size: 14px; }
+}
+
+
 .site-footer {
   position: relative;
   z-index: 1;
@@ -353,5 +458,6 @@ main {
 
 @media (prefers-reduced-motion: reduce) {
   .match-card { animation: none; opacity: 1; transform: none; }
+  .rank-row { animation: none; opacity: 1; transform: none; }
   html { scroll-behavior: auto; }
 }

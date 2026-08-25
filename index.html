@@ -19,7 +19,11 @@
     <p class="eyebrow">Pronostics statistiques — modèle Dixon-Coles</p>
     <div id="leagueTabs" class="league-tabs" role="tablist" aria-label="Choix du championnat"></div>
     <h1 id="leagueTitle">LIGUE 1<span class="accent-dot">.</span></h1>
-    <div class="matchday-nav">
+    <div id="viewTabs" class="view-tabs" role="tablist" aria-label="Choix de la vue">
+      <button class="view-tab active" data-view="journee">Journée</button>
+      <button class="view-tab" data-view="classement">Classement</button>
+    </div>
+    <div id="matchdayNav" class="matchday-nav">
       <label for="matchdaySelect" class="matchday-eyebrow">Journée</label>
       <div class="select-wrap">
         <select id="matchdaySelect" aria-label="Choisir la journée"></select>
@@ -31,6 +35,7 @@
 <main id="app">
   <div id="statusMsg" class="status-msg">Chargement des prédictions…</div>
   <div id="matches" class="matches"></div>
+  <div id="ranking" class="ranking hidden"></div>
 </main>
 
 <footer class="site-footer">

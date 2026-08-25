@@ -1,19 +1,29 @@
 // ⚠️ À adapter après le déploiement du backend sur Render :
 // remplace cette URL par celle de ton service Render
 // (format: https://ton-service.onrender.com, SANS "/" à la fin)
-const API_BASE = "https://ligue1-predictor-api.onrender.com";
+const API_BASE = "https://REMPLACE-MOI.onrender.com";
 
 const statusMsg = document.getElementById("statusMsg");
 const matchesEl = document.getElementById("matches");
+const rankingEl = document.getElementById("ranking");
+const matchdayNavEl = document.getElementById("matchdayNav");
 const matchdaySelectEl = document.getElementById("matchdaySelect");
 const loadingBarEl = document.getElementById("loadingBar");
 const leagueTabsEl = document.getElementById("leagueTabs");
 const leagueTitleEl = document.getElementById("leagueTitle");
+const viewTabsEl = document.getElementById("viewTabs");
 
 let currentLeague = localStorage.getItem("lastLeague") || "ligue-1";
+let currentView = "journee"; // "journee" | "classement"
 
 function pct(x) {
   return Math.round(x * 100) + "%";
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str ?? "";
+  return div.innerHTML;
 }
 
 function formatDate(iso) {
@@ -72,6 +82,66 @@ function populateMatchdaySelect(totalRounds, currentRound) {
   matchdaySelectEl.innerHTML = opts;
 }
 
+function rankingRowHTML(entry, index, minElo, maxElo) {
+  const range = Math.max(maxElo - minElo, 1);
+  const fillPct = Math.round(((entry.elo - minElo) / range) * 100);
+  const top3 = entry.rank <= 3 ? " top3" : "";
+  return `
+    <div class="rank-row${top3}" style="animation-delay:${index * 0.03}s">
+      <span class="rank-number">${entry.rank}</span>
+      <span class="rank-team">${escapeHtml(entry.team)}</span>
+      <div class="rank-bar-wrap"><div class="rank-bar" style="width:${fillPct}%"></div></div>
+      <span class="rank-elo">${Math.round(entry.elo)}</span>
+    </div>
+  `;
+}
+
+function renderRanking(data) {
+  const rows = data.classement || [];
+  if (rows.length === 0) {
+    rankingEl.innerHTML = "";
+    statusMsg.textContent = "Aucun classement disponible pour ce championnat.";
+    statusMsg.classList.remove("hidden");
+    return;
+  }
+  const elos = rows.map(r => r.elo);
+  const minElo = Math.min(...elos);
+  const maxElo = Math.max(...elos);
+  rankingEl.innerHTML = `
+    <p class="ranking-note">
+      Classement de force Elo (calculé sur l'historique complet) — à ne pas confondre
+      avec le classement officiel du championnat, et sans lien avec le calcul des
+      prédictions ci-dessus, qui repose uniquement sur le modèle Dixon-Coles.
+    </p>
+    <div class="ranking-table">
+      ${rows.map((r, i) => rankingRowHTML(r, i, minElo, maxElo)).join("")}
+    </div>
+  `;
+  statusMsg.classList.add("hidden");
+}
+
+async function fetchRanking() {
+  loadingBarEl.classList.add("active");
+  statusMsg.classList.remove("hidden", "error");
+  statusMsg.textContent = "Chargement du classement…";
+  try {
+    const res = await fetch(`${API_BASE}/api/${currentLeague}/classement`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    renderRanking(data);
+  } catch (err) {
+    rankingEl.innerHTML = "";
+    statusMsg.classList.add("error");
+    statusMsg.textContent =
+      "Impossible de contacter le serveur de prédictions. " +
+      "Vérifie que le service Render est bien démarré (il peut mettre 30-60s à se réveiller " +
+      "s'il était en veille), ou réessaie dans quelques instants.";
+    console.error(err);
+  } finally {
+    loadingBarEl.classList.remove("active");
+  }
+}
+
 function render(data) {
   populateMatchdaySelect(data.total_rounds, data.round_number);
   matchesEl.innerHTML = data.matches.map((m, i) => matchCardHTML(m, i)).join("");
@@ -105,8 +175,25 @@ async function fetchJourney(path) {
   }
 }
 
-function loadCurrentLeagueMatchday() {
-  fetchJourney(`/api/${currentLeague}/journee/courante`);
+function loadCurrentView() {
+  // Affiche/masque les blocs pertinents pour la vue active, puis charge ses données.
+  const isJournee = currentView === "journee";
+  matchdayNavEl.classList.toggle("hidden", !isJournee);
+  matchesEl.classList.toggle("hidden", !isJournee);
+  rankingEl.classList.toggle("hidden", isJournee);
+  if (isJournee) {
+    fetchJourney(`/api/${currentLeague}/journee/courante`);
+  } else {
+    fetchRanking();
+  }
+}
+
+function selectView(view) {
+  currentView = view;
+  viewTabsEl.querySelectorAll(".view-tab").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.view === view);
+  });
+  loadCurrentView();
 }
 
 function selectLeague(code, label) {
@@ -116,9 +203,13 @@ function selectLeague(code, label) {
   document.querySelectorAll(".league-tab").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.code === code);
   });
-  // journée en cours/à venir par défaut à chaque changement de championnat
-  loadCurrentLeagueMatchday();
+  // recharge la vue active (journée ou classement) pour le nouveau championnat
+  loadCurrentView();
 }
+
+viewTabsEl.querySelectorAll(".view-tab").forEach(btn => {
+  btn.addEventListener("click", () => selectView(btn.dataset.view));
+});
 
 async function initLeagueTabs() {
   try {
