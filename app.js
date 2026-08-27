@@ -1,7 +1,7 @@
 // ⚠️ À adapter après le déploiement du backend sur Render :
 // remplace cette URL par celle de ton service Render
 // (format: https://ton-service.onrender.com, SANS "/" à la fin)
-const API_BASE = "https://ligue1-predictor-api.onrender.com";
+const API_BASE = "https://REMPLACE-MOI.onrender.com";
 
 const statusMsg = document.getElementById("statusMsg");
 const matchesEl = document.getElementById("matches");
@@ -15,6 +15,12 @@ const viewTabsEl = document.getElementById("viewTabs");
 
 let currentLeague = localStorage.getItem("lastLeague") || "ligue-1";
 let currentView = "journee"; // "journee" | "classement"
+
+// Protection contre les réponses "en retard" : si on change de championnat/vue
+// pendant qu'une requête est en cours (ex: cold start Render de 30-60s sur un
+// championnat, cf. message d'erreur plus bas), la réponse la plus ancienne ne
+// doit jamais écraser l'affichage d'une sélection plus récente déjà rendue.
+let fetchGen = 0;
 
 function pct(x) {
   return Math.round(x * 100) + "%";
@@ -121,15 +127,19 @@ function renderRanking(data) {
 }
 
 async function fetchRanking() {
+  const myGen = ++fetchGen;
   loadingBarEl.classList.add("active");
   statusMsg.classList.remove("hidden", "error");
   statusMsg.textContent = "Chargement du classement…";
   try {
     const res = await fetch(`${API_BASE}/api/${currentLeague}/classement`);
+    if (myGen !== fetchGen) return; // une sélection plus récente a eu lieu entre-temps
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
+    if (myGen !== fetchGen) return;
     renderRanking(data);
   } catch (err) {
+    if (myGen !== fetchGen) return;
     rankingEl.innerHTML = "";
     statusMsg.classList.add("error");
     statusMsg.textContent =
@@ -138,7 +148,7 @@ async function fetchRanking() {
       "s'il était en veille), ou réessaie dans quelques instants.";
     console.error(err);
   } finally {
-    loadingBarEl.classList.remove("active");
+    if (myGen === fetchGen) loadingBarEl.classList.remove("active");
   }
 }
 
@@ -149,13 +159,16 @@ function render(data) {
 }
 
 async function fetchJourney(path) {
+  const myGen = ++fetchGen;
   loadingBarEl.classList.add("active");
   statusMsg.classList.remove("hidden", "error");
   statusMsg.textContent = "Chargement des prédictions…";
   try {
     const res = await fetch(`${API_BASE}${path}`);
+    if (myGen !== fetchGen) return;
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
+    if (myGen !== fetchGen) return;
     if (!data.matches || data.matches.length === 0) {
       matchesEl.innerHTML = "";
       statusMsg.textContent = "Aucun match trouvé pour cette journée.";
@@ -163,6 +176,7 @@ async function fetchJourney(path) {
     }
     render(data);
   } catch (err) {
+    if (myGen !== fetchGen) return;
     matchesEl.innerHTML = "";
     statusMsg.classList.add("error");
     statusMsg.textContent =
@@ -171,7 +185,7 @@ async function fetchJourney(path) {
       "s'il était en veille), ou réessaie dans quelques instants.";
     console.error(err);
   } finally {
-    loadingBarEl.classList.remove("active");
+    if (myGen === fetchGen) loadingBarEl.classList.remove("active");
   }
 }
 
