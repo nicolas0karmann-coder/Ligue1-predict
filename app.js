@@ -1,7 +1,7 @@
 // ⚠️ À adapter après le déploiement du backend sur Render :
 // remplace cette URL par celle de ton service Render
 // (format: https://ton-service.onrender.com, SANS "/" à la fin)
-const API_BASE = "https://ligue1-predictor-api.onrender.com";
+const API_BASE = "https://REMPLACE-MOI.onrender.com";
 
 const statusMsg = document.getElementById("statusMsg");
 const matchesEl = document.getElementById("matches");
@@ -205,7 +205,9 @@ function loadCurrentView() {
 function selectView(view) {
   currentView = view;
   viewTabsEl.querySelectorAll(".view-tab").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.view === view);
+    const isActive = btn.dataset.view === view;
+    btn.classList.toggle("active", isActive);
+    btn.setAttribute("aria-selected", isActive ? "true" : "false");
   });
   loadCurrentView();
 }
@@ -215,7 +217,9 @@ function selectLeague(code, label) {
   localStorage.setItem("lastLeague", code);
   leagueTitleEl.innerHTML = `${label.toUpperCase()}<span class="accent-dot">.</span>`;
   document.querySelectorAll(".league-tab").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.code === code);
+    const isActive = btn.dataset.code === code;
+    btn.classList.toggle("active", isActive);
+    btn.setAttribute("aria-selected", isActive ? "true" : "false");
   });
   // recharge la vue active (journée ou classement) pour le nouveau championnat
   loadCurrentView();
@@ -233,7 +237,8 @@ async function initLeagueTabs() {
     const leagues = data.championnats || [];
 
     leagueTabsEl.innerHTML = leagues.map(l => `
-      <button class="league-tab" data-code="${l.code}" data-label="${l.label}">
+      <button class="league-tab" data-code="${l.code}" data-label="${l.label}"
+              role="tab" aria-selected="false">
         ${l.flag} ${l.label}
       </button>
     `).join("");
