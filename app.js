@@ -1,7 +1,7 @@
 // ⚠️ À adapter après le déploiement du backend sur Render :
 // remplace cette URL par celle de ton service Render
 // (format: https://ton-service.onrender.com, SANS "/" à la fin)
-const API_BASE = "https://ligue1-predictor-api.onrender.com";
+const API_BASE = "https://REMPLACE-MOI.onrender.com";
 
 const statusMsg = document.getElementById("statusMsg");
 const matchesEl = document.getElementById("matches");
@@ -19,6 +19,7 @@ const dateMatchesEl = document.getElementById("dateMatches");
 const dateInputEl = document.getElementById("dateInput");
 const clModeEl = document.getElementById("clMode");
 const clMatchesEl = document.getElementById("clMatches");
+const clMatchdaySelectEl = document.getElementById("clMatchdaySelect");
 
 let currentLeague = localStorage.getItem("lastLeague") || "ligue-1";
 let currentView = "journee"; // "journee" | "classement"
@@ -99,13 +100,13 @@ function matchCardHTML(m, index) {
   `;
 }
 
-function populateMatchdaySelect(totalRounds, currentRound) {
+function populateMatchdaySelect(totalRounds, currentRound, targetEl = matchdaySelectEl) {
   const total = Math.max(totalRounds || currentRound, currentRound);
   let opts = "";
   for (let i = 1; i <= total; i++) {
     opts += `<option value="${i}"${i === currentRound ? " selected" : ""}>Journée ${i}</option>`;
   }
-  matchdaySelectEl.innerHTML = opts;
+  targetEl.innerHTML = opts;
 }
 
 function rankingRowHTML(entry, index, minElo, maxElo) {
@@ -338,18 +339,25 @@ async function fetchMatchsDuJour(date) {
   }
 }
 
-async function fetchChampionsLeague() {
+async function fetchChampionsLeague(numero) {
   const myGen = ++fetchGen;
   loadingBarEl.classList.add("active");
   statusMsg.classList.remove("hidden");
   statusMsg.textContent = "Chargement des prédictions…";
   clMatchesEl.innerHTML = "";
   try {
-    const res = await fetch(`${API_BASE}/api/champions-league/journee/courante`);
+    const url = numero
+      ? `${API_BASE}/api/champions-league/journee/${numero}`
+      : `${API_BASE}/api/champions-league/journee/courante`;
+    const res = await fetch(url);
     if (myGen !== fetchGen) return;
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (myGen !== fetchGen) return;
+
+    if (data.round_number) {
+      populateMatchdaySelect(data.total_rounds, data.round_number, clMatchdaySelectEl);
+    }
 
     const matches = data.matches || [];
     if (matches.length === 0) {
@@ -372,6 +380,11 @@ async function fetchChampionsLeague() {
     if (myGen === fetchGen) loadingBarEl.classList.remove("active");
   }
 }
+
+clMatchdaySelectEl.addEventListener("change", () => {
+  const numero = parseInt(clMatchdaySelectEl.value, 10);
+  if (numero) fetchChampionsLeague(numero);
+});
 
 function selectMode(mode) {
   currentMode = mode;
