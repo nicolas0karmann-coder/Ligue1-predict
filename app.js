@@ -1,7 +1,7 @@
 // ⚠️ À adapter après le déploiement du backend sur Render :
 // remplace cette URL par celle de ton service Render
 // (format: https://ton-service.onrender.com, SANS "/" à la fin)
-const API_BASE = "https://ligue1-predictor-api.onrender.com";
+const API_BASE = "https://REMPLACE-MOI.onrender.com";
 
 const statusMsg = document.getElementById("statusMsg");
 const matchesEl = document.getElementById("matches");
@@ -39,6 +39,12 @@ function formatDate(iso) {
     weekday: "short", day: "numeric", month: "short",
     hour: "2-digit", minute: "2-digit",
   });
+}
+
+function formatDateOnly(isoDate) {
+  if (!isoDate) return "";
+  const d = new Date(isoDate + "T00:00:00");
+  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 }
 
 function fatigueBadge() {
@@ -119,6 +125,7 @@ function renderRanking(data) {
   const minElo = Math.min(...elos);
   const maxElo = Math.max(...elos);
   rankingEl.innerHTML = `
+    <p class="ranking-updated">Dernière mise à jour des données : ${formatDateOnly(data.computed_up_to)}</p>
     <p class="ranking-note">
       Classement de force Elo (calculé sur l'historique complet) — à ne pas confondre
       avec le classement officiel du championnat, et sans lien avec le calcul des
