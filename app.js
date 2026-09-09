@@ -1,7 +1,7 @@
 // ⚠️ À adapter après le déploiement du backend sur Render :
 // remplace cette URL par celle de ton service Render
 // (format: https://ton-service.onrender.com, SANS "/" à la fin)
-const API_BASE = "https://ligue1-predictor-api.onrender.com";
+const API_BASE = "https://REMPLACE-MOI.onrender.com";
 
 const statusMsg = document.getElementById("statusMsg");
 const matchesEl = document.getElementById("matches");
@@ -41,6 +41,13 @@ function formatDate(iso) {
   });
 }
 
+function fatigueBadge() {
+  return `<span class="fatigue-badge" title="A joué en coupe d'Europe récemment">🔻 Europe</span>`;
+}
+function promuBadge() {
+  return `<span class="promu-badge" title="Équipe promue cette saison : peu d'historique disponible, prédiction moins fiable">🆕 Promu</span>`;
+}
+
 function matchCardHTML(m, index) {
   const home = pct(m.prob_home_win);
   const draw = pct(m.prob_draw);
@@ -51,8 +58,6 @@ function matchCardHTML(m, index) {
     .map(s => `<span class="score-chip"><b>${s.home_goals}-${s.away_goals}</b> ${pct(s.probability)}</span>`)
     .join("");
 
-  const fatigueBadge = () => `<span class="fatigue-badge" title="A joué en coupe d'Europe récemment">🔻 Europe</span>`;
-
   return `
     <article class="match-card" style="animation-delay:${index * 0.06}s">
       <div class="match-meta">
@@ -60,9 +65,9 @@ function matchCardHTML(m, index) {
         ${m.played ? '<span class="played-badge">Match joué</span>' : ""}
       </div>
       <div class="teams-row">
-        <div class="team-name home">${m.home_team}${m.home_fatigue ? fatigueBadge() : ""}</div>
+        <div class="team-name home">${m.home_team}${m.home_fatigue ? fatigueBadge() : ""}${m.home_promu ? promuBadge() : ""}</div>
         <div class="expected-score">${m.expected_goals_home.toFixed(1)}<span class="sep">–</span>${m.expected_goals_away.toFixed(1)}</div>
-        <div class="team-name away">${m.away_team}${m.away_fatigue ? fatigueBadge() : ""}</div>
+        <div class="team-name away">${m.away_team}${m.away_fatigue ? fatigueBadge() : ""}${m.away_promu ? promuBadge() : ""}</div>
       </div>
       <div class="prob-bar">
         <div class="prob-seg home ${m.prob_home_win < 0.12 ? 'tiny' : ''}" style="flex-grow:${m.prob_home_win}">${home}</div>
@@ -95,7 +100,7 @@ function rankingRowHTML(entry, index, minElo, maxElo) {
   return `
     <div class="rank-row${top3}" style="animation-delay:${index * 0.03}s">
       <span class="rank-number">${entry.rank}</span>
-      <span class="rank-team">${escapeHtml(entry.team)}</span>
+      <span class="rank-team">${escapeHtml(entry.team)}${entry.promu ? promuBadge() : ""}</span>
       <div class="rank-bar-wrap"><div class="rank-bar" style="width:${fillPct}%"></div></div>
       <span class="rank-elo">${Math.round(entry.elo)}</span>
     </div>
