@@ -1,7 +1,7 @@
 // ⚠️ À adapter après le déploiement du backend sur Render :
 // remplace cette URL par celle de ton service Render
 // (format: https://ton-service.onrender.com, SANS "/" à la fin)
-const API_BASE = "https://ligue1-predictor-api.onrender.com";
+const API_BASE = "https://REMPLACE-MOI.onrender.com";
 
 const statusMsg = document.getElementById("statusMsg");
 const matchesEl = document.getElementById("matches");
@@ -20,6 +20,10 @@ const dateInputEl = document.getElementById("dateInput");
 const clModeEl = document.getElementById("clMode");
 const clMatchesEl = document.getElementById("clMatches");
 const clMatchdaySelectEl = document.getElementById("clMatchdaySelect");
+const clMatchdayNavEl = document.getElementById("clMatchdayNav");
+const clViewTabsEl = document.getElementById("clViewTabs");
+const clRankingEl = document.getElementById("clRanking");
+let currentClView = "journee"; // "journee" | "classement"
 
 let currentLeague = localStorage.getItem("lastLeague") || "ligue-1";
 let currentView = "journee"; // "journee" | "classement"
@@ -386,6 +390,77 @@ clMatchdaySelectEl.addEventListener("change", () => {
   if (numero) fetchChampionsLeague(numero);
 });
 
+function renderClRanking(data) {
+  const rows = data.classement || [];
+  if (rows.length === 0) {
+    clRankingEl.innerHTML = "";
+    statusMsg.textContent = "Aucun classement disponible pour la Ligue des Champions.";
+    statusMsg.classList.remove("hidden");
+    return;
+  }
+  const elos = rows.map(r => r.elo);
+  const minElo = Math.min(...elos);
+  const maxElo = Math.max(...elos);
+  clRankingEl.innerHTML = `
+    <p class="ranking-updated">Dernière mise à jour des données : ${formatDateOnly(data.computed_up_to)}</p>
+    <p class="ranking-note">
+      ⚠️ ${data.avertissement || "Estimation de force Elo, pas le classement officiel de la phase de ligue."}
+    </p>
+    <div class="ranking-table">
+      ${rows.map((r, i) => rankingRowHTML(r, i, minElo, maxElo)).join("")}
+    </div>
+  `;
+  statusMsg.classList.add("hidden");
+}
+
+async function fetchClRanking() {
+  const myGen = ++fetchGen;
+  loadingBarEl.classList.add("active");
+  statusMsg.classList.remove("hidden");
+  statusMsg.textContent = "Chargement du classement…";
+  try {
+    const res = await fetch(`${API_BASE}/api/champions-league/classement`);
+    if (myGen !== fetchGen) return;
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (myGen !== fetchGen) return;
+    renderClRanking(data);
+  } catch (err) {
+    if (myGen !== fetchGen) return;
+    clRankingEl.innerHTML = "";
+    statusMsg.classList.remove("hidden");
+    statusMsg.textContent =
+      "Impossible de contacter le serveur de prédictions. " +
+      "Vérifie que le service Render est bien démarré (il peut mettre 30-60s à se réveiller " +
+      "s'il était en veille), ou réessaie dans quelques instants.";
+    console.error(err);
+  } finally {
+    if (myGen === fetchGen) loadingBarEl.classList.remove("active");
+  }
+}
+
+function selectClView(view) {
+  currentClView = view;
+  clViewTabsEl.querySelectorAll(".view-tab").forEach(btn => {
+    const isActive = btn.dataset.clview === view;
+    btn.classList.toggle("active", isActive);
+    btn.setAttribute("aria-selected", isActive ? "true" : "false");
+  });
+  const isJournee = view === "journee";
+  clMatchesEl.classList.toggle("hidden", !isJournee);
+  clMatchdayNavEl.classList.toggle("hidden", !isJournee);
+  clRankingEl.classList.toggle("hidden", isJournee);
+  if (isJournee) {
+    fetchChampionsLeague();
+  } else {
+    fetchClRanking();
+  }
+}
+
+clViewTabsEl.querySelectorAll(".view-tab").forEach(btn => {
+  btn.addEventListener("click", () => selectClView(btn.dataset.clview));
+});
+
 function selectMode(mode) {
   currentMode = mode;
   modeTabsEl.querySelectorAll(".mode-tab").forEach(btn => {
@@ -398,7 +473,10 @@ function selectMode(mode) {
   dateModeEl.classList.toggle("hidden", mode !== "date");
   clModeEl.classList.toggle("hidden", mode !== "champions-league");
   dateMatchesEl.classList.toggle("hidden", mode !== "date");
-  clMatchesEl.classList.toggle("hidden", mode !== "champions-league");
+  // les deux sous-vues C1 (matches/ranking) sont masquees ici par defaut ;
+  // selectClView() re-affiche la bonne des deux si on entre dans ce mode
+  clMatchesEl.classList.add("hidden");
+  clRankingEl.classList.add("hidden");
   // les blocs de la vue "championnat" (matches/ranking) restent geres par
   // loadCurrentView -> on les masque explicitement ici si on quitte ce mode
   if (mode === "championnat") {
@@ -413,7 +491,7 @@ function selectMode(mode) {
     if (!dateInputEl.value) dateInputEl.value = todayIsoDate();
     fetchMatchsDuJour(dateInputEl.value);
   } else if (mode === "champions-league") {
-    fetchChampionsLeague();
+    selectClView(currentClView);
   }
 }
 

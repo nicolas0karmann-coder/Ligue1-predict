@@ -57,7 +57,13 @@
         Modèle dédié (Elo unifié entre championnats + historique C1) — pas le
         même modèle que les championnats nationaux, cf. explication en bas de page.
       </p>
-      <div class="matchday-nav">
+      <div id="clViewTabs" class="view-tabs" role="tablist" aria-label="Choix de la vue">
+        <button id="clViewTabJournee" class="view-tab active" data-clview="journee" role="tab"
+                aria-selected="true">Journée</button>
+        <button id="clViewTabClassement" class="view-tab" data-clview="classement" role="tab"
+                aria-selected="false">Classement</button>
+      </div>
+      <div id="clMatchdayNav" class="matchday-nav">
         <label for="clMatchdaySelect" class="matchday-eyebrow">Journée</label>
         <div class="select-wrap">
           <select id="clMatchdaySelect" aria-label="Choisir la journée"></select>
@@ -73,6 +79,7 @@
   <div id="ranking" class="ranking hidden" role="tabpanel" aria-labelledby="viewTabClassement"></div>
   <div id="dateMatches" class="matches hidden"></div>
   <div id="clMatches" class="matches hidden"></div>
+  <div id="clRanking" class="ranking hidden"></div>
 </main>
 
 <footer class="site-footer">
