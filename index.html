@@ -17,18 +17,35 @@
 <header class="masthead">
   <div class="masthead-inner">
     <p class="eyebrow">Pronostics statistiques — modèle Dixon-Coles</p>
-    <div id="leagueTabs" class="league-tabs" role="tablist" aria-label="Choix du championnat"></div>
-    <h1 id="leagueTitle">LIGUE 1<span class="accent-dot">.</span></h1>
-    <div id="viewTabs" class="view-tabs" role="tablist" aria-label="Choix de la vue">
-      <button id="viewTabJournee" class="view-tab active" data-view="journee" role="tab"
-              aria-selected="true" aria-controls="matchdayNav matches">Journée</button>
-      <button id="viewTabClassement" class="view-tab" data-view="classement" role="tab"
-              aria-selected="false" aria-controls="ranking">Classement</button>
+    <div id="modeTabs" class="mode-tabs" role="tablist" aria-label="Mode d'affichage">
+      <button id="modeTabChampionnat" class="mode-tab active" data-mode="championnat" role="tab"
+              aria-selected="true">Championnats</button>
+      <button id="modeTabDate" class="mode-tab" data-mode="date" role="tab"
+              aria-selected="false">Par date</button>
     </div>
-    <div id="matchdayNav" class="matchday-nav">
-      <label for="matchdaySelect" class="matchday-eyebrow">Journée</label>
-      <div class="select-wrap">
-        <select id="matchdaySelect" aria-label="Choisir la journée"></select>
+
+    <div id="championnatMode">
+      <div id="leagueTabs" class="league-tabs" role="tablist" aria-label="Choix du championnat"></div>
+      <h1 id="leagueTitle">LIGUE 1<span class="accent-dot">.</span></h1>
+      <div id="viewTabs" class="view-tabs" role="tablist" aria-label="Choix de la vue">
+        <button id="viewTabJournee" class="view-tab active" data-view="journee" role="tab"
+                aria-selected="true" aria-controls="matchdayNav matches">Journée</button>
+        <button id="viewTabClassement" class="view-tab" data-view="classement" role="tab"
+                aria-selected="false" aria-controls="ranking">Classement</button>
+      </div>
+      <div id="matchdayNav" class="matchday-nav">
+        <label for="matchdaySelect" class="matchday-eyebrow">Journée</label>
+        <div class="select-wrap">
+          <select id="matchdaySelect" aria-label="Choisir la journée"></select>
+        </div>
+      </div>
+    </div>
+
+    <div id="dateMode" class="hidden">
+      <h1>PAR DATE<span class="accent-dot">.</span></h1>
+      <div class="date-nav">
+        <label for="dateInput" class="matchday-eyebrow">Choisir une date</label>
+        <input type="date" id="dateInput" aria-label="Choisir une date">
       </div>
     </div>
   </div>
@@ -38,6 +55,7 @@
   <div id="statusMsg" class="status-msg">Chargement des prédictions…</div>
   <div id="matches" class="matches" role="tabpanel" aria-labelledby="viewTabJournee"></div>
   <div id="ranking" class="ranking hidden" role="tabpanel" aria-labelledby="viewTabClassement"></div>
+  <div id="dateMatches" class="matches hidden"></div>
 </main>
 
 <footer class="site-footer">

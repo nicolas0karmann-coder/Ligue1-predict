@@ -1,7 +1,7 @@
 // ⚠️ À adapter après le déploiement du backend sur Render :
 // remplace cette URL par celle de ton service Render
 // (format: https://ton-service.onrender.com, SANS "/" à la fin)
-const API_BASE = "https://ligue1-predictor-api.onrender.com";
+const API_BASE = "https://REMPLACE-MOI.onrender.com";
 
 const statusMsg = document.getElementById("statusMsg");
 const matchesEl = document.getElementById("matches");
@@ -12,9 +12,15 @@ const loadingBarEl = document.getElementById("loadingBar");
 const leagueTabsEl = document.getElementById("leagueTabs");
 const leagueTitleEl = document.getElementById("leagueTitle");
 const viewTabsEl = document.getElementById("viewTabs");
+const modeTabsEl = document.getElementById("modeTabs");
+const championnatModeEl = document.getElementById("championnatMode");
+const dateModeEl = document.getElementById("dateMode");
+const dateMatchesEl = document.getElementById("dateMatches");
+const dateInputEl = document.getElementById("dateInput");
 
 let currentLeague = localStorage.getItem("lastLeague") || "ligue-1";
 let currentView = "journee"; // "journee" | "classement"
+let currentMode = "championnat"; // "championnat" | "date"
 
 // Protection contre les réponses "en retard" : si on change de championnat/vue
 // pendant qu'une requête est en cours (ex: cold start Render de 30-60s sur un
@@ -68,6 +74,7 @@ function matchCardHTML(m, index) {
     <article class="match-card" style="animation-delay:${index * 0.06}s">
       <div class="match-meta">
         <span>${formatDate(m.date_utc)}${m.location ? " · " + m.location : ""}</span>
+        ${m.championnat_label ? `<span class="match-league-badge">${m.flag} ${m.championnat_label}</span>` : ""}
         ${m.played ? '<span class="played-badge">Match joué</span>' : ""}
       </div>
       <div class="teams-row">
@@ -278,6 +285,87 @@ async function initLeagueTabs() {
 matchdaySelectEl.addEventListener("change", () => {
   const numero = parseInt(matchdaySelectEl.value, 10);
   if (numero) fetchJourney(`/api/${currentLeague}/journee/${numero}`);
+});
+
+function todayIsoDate() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+async function fetchMatchsDuJour(date) {
+  const myGen = ++fetchGen;
+  loadingBarEl.classList.add("active");
+  statusMsg.classList.remove("hidden");
+  statusMsg.textContent = "Chargement des prédictions…";
+  dateMatchesEl.innerHTML = "";
+  try {
+    const res = await fetch(`${API_BASE}/api/matchs-du-jour?date=${date}`);
+    if (myGen !== fetchGen) return; // une selection plus recente a deja pris le relais
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (myGen !== fetchGen) return;
+
+    const matches = data.matches || [];
+    if (matches.length === 0) {
+      dateMatchesEl.innerHTML = "";
+      statusMsg.textContent = "Aucun match ce jour-là dans les championnats disponibles.";
+      statusMsg.classList.remove("hidden");
+      return;
+    }
+    dateMatchesEl.innerHTML = matches.map((m, i) => matchCardHTML(m, i)).join("");
+    statusMsg.classList.add("hidden");
+
+    if (data.championnats_indisponibles && data.championnats_indisponibles.length > 0) {
+      const note = document.createElement("p");
+      note.className = "ranking-note";
+      note.textContent = `Championnats indisponibles pour le moment (non inclus ci-dessus) : ${data.championnats_indisponibles.join(", ")}.`;
+      dateMatchesEl.prepend(note);
+    }
+  } catch (err) {
+    if (myGen !== fetchGen) return;
+    dateMatchesEl.innerHTML = "";
+    statusMsg.classList.remove("hidden");
+    statusMsg.textContent =
+      "Impossible de contacter le serveur de prédictions. " +
+      "Vérifie que le service Render est bien démarré (il peut mettre 30-60s à se réveiller " +
+      "s'il était en veille), ou réessaie dans quelques instants.";
+    console.error(err);
+  } finally {
+    if (myGen === fetchGen) loadingBarEl.classList.remove("active");
+  }
+}
+
+function selectMode(mode) {
+  currentMode = mode;
+  modeTabsEl.querySelectorAll(".mode-tab").forEach(btn => {
+    const isActive = btn.dataset.mode === mode;
+    btn.classList.toggle("active", isActive);
+    btn.setAttribute("aria-selected", isActive ? "true" : "false");
+  });
+  const isChampionnat = mode === "championnat";
+  championnatModeEl.classList.toggle("hidden", !isChampionnat);
+  dateModeEl.classList.toggle("hidden", isChampionnat);
+  dateMatchesEl.classList.toggle("hidden", isChampionnat);
+  // les blocs de la vue "championnat" (matches/ranking) restent geres par
+  // loadCurrentView -> on les masque explicitement ici si on quitte ce mode
+  if (isChampionnat) {
+    loadCurrentView();
+  } else {
+    matchesEl.classList.add("hidden");
+    rankingEl.classList.add("hidden");
+    matchdayNavEl.classList.add("hidden");
+    if (!dateInputEl.value) dateInputEl.value = todayIsoDate();
+    fetchMatchsDuJour(dateInputEl.value);
+  }
+}
+
+modeTabsEl.querySelectorAll(".mode-tab").forEach(btn => {
+  btn.addEventListener("click", () => selectMode(btn.dataset.mode));
+});
+
+dateInputEl.addEventListener("change", () => {
+  if (dateInputEl.value) fetchMatchsDuJour(dateInputEl.value);
 });
 
 initLeagueTabs();
