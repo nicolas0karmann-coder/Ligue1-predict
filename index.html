@@ -22,6 +22,8 @@
               aria-selected="true">Championnats</button>
       <button id="modeTabDate" class="mode-tab" data-mode="date" role="tab"
               aria-selected="false">Par date</button>
+      <button id="modeTabCL" class="mode-tab" data-mode="champions-league" role="tab"
+              aria-selected="false">Ligue des Champions</button>
     </div>
 
     <div id="championnatMode">
@@ -48,6 +50,14 @@
         <input type="date" id="dateInput" aria-label="Choisir une date">
       </div>
     </div>
+
+    <div id="clMode" class="hidden">
+      <h1>LIGUE DES CHAMPIONS<span class="accent-dot">.</span></h1>
+      <p class="ranking-note">
+        Modèle dédié (Elo unifié entre championnats + historique C1) — pas le
+        même modèle que les championnats nationaux, cf. explication en bas de page.
+      </p>
+    </div>
   </div>
 </header>
 
@@ -56,6 +66,7 @@
   <div id="matches" class="matches" role="tabpanel" aria-labelledby="viewTabJournee"></div>
   <div id="ranking" class="ranking hidden" role="tabpanel" aria-labelledby="viewTabClassement"></div>
   <div id="dateMatches" class="matches hidden"></div>
+  <div id="clMatches" class="matches hidden"></div>
 </main>
 
 <footer class="site-footer">
