@@ -150,7 +150,7 @@ body {
 .mode-tab:hover { color: var(--text-muted); }
 .mode-tab.active { color: var(--bg); background: var(--home); border-color: var(--home); font-weight: 700; }
 
-#championnatMode.hidden, #dateMode.hidden { display: none; }
+#championnatMode.hidden, #dateMode.hidden, #clMode.hidden { display: none; }
 
 .date-nav {
   display: flex;
