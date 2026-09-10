@@ -169,6 +169,63 @@ body {
   padding: 8px 12px;
 }
 
+.filter-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: var(--surface-hover);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  transition: background 0.15s;
+}
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--text-muted);
+  border-radius: 50%;
+  transition: transform 0.15s, background 0.15s;
+}
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--home);
+  border-color: var(--home);
+}
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translate(18px, -50%);
+  background: var(--bg);
+}
+
+.toggle-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
 .match-league-badge {
   display: inline-block;
   font-family: 'JetBrains Mono', monospace;

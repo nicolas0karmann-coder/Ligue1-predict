@@ -1,7 +1,7 @@
 // ⚠️ À adapter après le déploiement du backend sur Render :
 // remplace cette URL par celle de ton service Render
 // (format: https://ton-service.onrender.com, SANS "/" à la fin)
-const API_BASE = "https://ligue1-predictor-api.onrender.com";
+const API_BASE = "https://REMPLACE-MOI.onrender.com";
 
 const statusMsg = document.getElementById("statusMsg");
 const matchesEl = document.getElementById("matches");
@@ -17,6 +17,7 @@ const championnatModeEl = document.getElementById("championnatMode");
 const dateModeEl = document.getElementById("dateMode");
 const dateMatchesEl = document.getElementById("dateMatches");
 const dateInputEl = document.getElementById("dateInput");
+const favorisToggleEl = document.getElementById("favorisToggle");
 const clModeEl = document.getElementById("clMode");
 const clMatchesEl = document.getElementById("clMatches");
 const clMatchdaySelectEl = document.getElementById("clMatchdaySelect");
@@ -300,6 +301,35 @@ function todayIsoDate() {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
+let dernierMatchsDuJour = { matches: [], championnats_indisponibles: [] };
+
+function renderDateMatches() {
+  const filtreActif = favorisToggleEl.checked;
+  let matches = dernierMatchsDuJour.matches || [];
+  if (filtreActif) {
+    matches = matches.filter(m => m.prob_home_win >= 0.5 || m.prob_away_win >= 0.5);
+  }
+
+  if (matches.length === 0) {
+    dateMatchesEl.innerHTML = "";
+    statusMsg.textContent = filtreActif
+      ? "Aucun favori net (≥ 50%) ce jour-là."
+      : "Aucun match ce jour-là dans les championnats disponibles.";
+    statusMsg.classList.remove("hidden");
+    return;
+  }
+  dateMatchesEl.innerHTML = matches.map((m, i) => matchCardHTML(m, i)).join("");
+  statusMsg.classList.add("hidden");
+
+  const indispo = dernierMatchsDuJour.championnats_indisponibles || [];
+  if (indispo.length > 0) {
+    const note = document.createElement("p");
+    note.className = "ranking-note";
+    note.textContent = `Championnats indisponibles pour le moment (non inclus ci-dessus) : ${indispo.join(", ")}.`;
+    dateMatchesEl.prepend(note);
+  }
+}
+
 async function fetchMatchsDuJour(date) {
   const myGen = ++fetchGen;
   loadingBarEl.classList.add("active");
@@ -313,22 +343,8 @@ async function fetchMatchsDuJour(date) {
     const data = await res.json();
     if (myGen !== fetchGen) return;
 
-    const matches = data.matches || [];
-    if (matches.length === 0) {
-      dateMatchesEl.innerHTML = "";
-      statusMsg.textContent = "Aucun match ce jour-là dans les championnats disponibles.";
-      statusMsg.classList.remove("hidden");
-      return;
-    }
-    dateMatchesEl.innerHTML = matches.map((m, i) => matchCardHTML(m, i)).join("");
-    statusMsg.classList.add("hidden");
-
-    if (data.championnats_indisponibles && data.championnats_indisponibles.length > 0) {
-      const note = document.createElement("p");
-      note.className = "ranking-note";
-      note.textContent = `Championnats indisponibles pour le moment (non inclus ci-dessus) : ${data.championnats_indisponibles.join(", ")}.`;
-      dateMatchesEl.prepend(note);
-    }
+    dernierMatchsDuJour = data;
+    renderDateMatches();
   } catch (err) {
     if (myGen !== fetchGen) return;
     dateMatchesEl.innerHTML = "";
@@ -501,6 +517,10 @@ modeTabsEl.querySelectorAll(".mode-tab").forEach(btn => {
 
 dateInputEl.addEventListener("change", () => {
   if (dateInputEl.value) fetchMatchsDuJour(dateInputEl.value);
+});
+
+favorisToggleEl.addEventListener("change", () => {
+  renderDateMatches(); // pas de nouvel appel reseau, on filtre les donnees deja recuperees
 });
 
 initLeagueTabs();
