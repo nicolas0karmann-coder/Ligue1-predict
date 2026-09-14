@@ -1,7 +1,7 @@
 // ⚠️ À adapter après le déploiement du backend sur Render :
 // remplace cette URL par celle de ton service Render
 // (format: https://ton-service.onrender.com, SANS "/" à la fin)
-const API_BASE = "https://ligue1-predictor-api.onrender.com";
+const API_BASE = "https://REMPLACE-MOI.onrender.com";
 
 const statusMsg = document.getElementById("statusMsg");
 const matchesEl = document.getElementById("matches");
@@ -183,6 +183,33 @@ function render(data) {
   populateMatchdaySelect(data.total_rounds, data.round_number);
   matchesEl.innerHTML = data.matches.map((m, i) => matchCardHTML(m, i)).join("");
   statusMsg.classList.add("hidden");
+  updateSotFreshnessIndicator(data.signal_tirs_cadres_frais);
+}
+
+// Ajouté le 2026-09-14 à la demande de l'utilisateur : petit indicateur
+// visuel par championnat, à côté du titre -- 😊 si le signal tirs cadrés
+// (cf. backend/app/shots_on_target.py) a bien pu inclure la saison en
+// cours, 🙏 s'il est absent ou en repli sur une saison plus ancienne
+// (championnat sans ce signal du tout, ou échec temporaire des deux
+// sources -- cf. /admin/sot-freshness côté backend pour le détail).
+// data.signal_tirs_cadres_frais vaut undefined pour des réponses qui n'ont
+// pas cette info (ex: ancien cache, ou endpoint différent) -- traité comme
+// "non disponible" plutôt que de planter.
+function updateSotFreshnessIndicator(estFrais) {
+  const el = document.getElementById("sotFreshnessIndicator");
+  if (!el) return;
+  if (estFrais === undefined) {
+    el.classList.add("hidden");
+    return;
+  }
+  el.classList.remove("hidden");
+  if (estFrais) {
+    el.textContent = "😊";
+    el.title = "Signal tirs cadrés à jour pour la saison en cours";
+  } else {
+    el.textContent = "🙏";
+    el.title = "Signal tirs cadrés indisponible pour la saison en cours -- prédiction basée sur Dixon-Coles + Elo + moyenne du championnat";
+  }
 }
 
 async function fetchJourney(path) {

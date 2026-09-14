@@ -269,6 +269,19 @@ h1 {
 }
 
 .accent-dot { color: var(--home); }
+.sot-freshness {
+  /* Indicateur ajoute le 2026-09-14 a la demande de l'utilisateur : petit
+     smiley pres du titre du championnat indiquant si le signal tirs
+     cadres a bien pu inclure la saison en cours (verifiable aussi via
+     /admin/sot-freshness cote backend). Taille reduite et separee du
+     titre pour ne pas distraire -- une info secondaire, pas un element
+     dominant de l'interface. */
+  font-size: 0.5em;
+  margin-left: 0.3em;
+  vertical-align: middle;
+  cursor: help;
+}
+.sot-freshness.hidden { display: none; }
 
 .matchday-nav {
   display: flex;
