@@ -1,7 +1,7 @@
 // ⚠️ À adapter après le déploiement du backend sur Render :
 // remplace cette URL par celle de ton service Render
 // (format: https://ton-service.onrender.com, SANS "/" à la fin)
-const API_BASE = "https://ligue1-predictor-api.onrender.com";
+const API_BASE = "https://REMPLACE-MOI.onrender.com";
 
 const statusMsg = document.getElementById("statusMsg");
 const matchesEl = document.getElementById("matches");
@@ -269,7 +269,7 @@ function selectView(view) {
 function selectLeague(code, label) {
   currentLeague = code;
   localStorage.setItem("lastLeague", code);
-  leagueTitleEl.innerHTML = `${label.toUpperCase()}<span class="accent-dot">.</span>`;
+  leagueTitleEl.innerHTML = `${label.toUpperCase()}<span class="accent-dot">.</span><span id="sotFreshnessIndicator" class="sot-freshness hidden"></span>`;
   document.querySelectorAll(".league-tab").forEach(btn => {
     const isActive = btn.dataset.code === code;
     btn.classList.toggle("active", isActive);
